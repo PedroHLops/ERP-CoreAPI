@@ -1,0 +1,39 @@
+spring:
+  datasource: 
+    url: jdbc:mysql://localhost:3306/coreapi
+    username: root
+    password: 1a250ZZ95
+  jpa:
+    show-sql: 'true'
+    hibernate:
+      ddl-auto: update
+  main:
+    allow-bean-definition-overriding: true
+  cache:
+    type: jcache
+    jcache:
+      provider: com.hazelcast.cache.impl.HazelcastServerCachingProvider
+      config: classpath:hazelcast.xml
+
+server:
+  error:
+    include-stacktrace: never
+
+api:
+  security:
+    token:
+      secret: ${JWTToken:1234567}
+
+bucket4j:
+  enabled: true
+  filters:
+  - cache-name: RateLimit
+    url: .*
+    filter-order: 100
+    rate-limits:
+      - skip-condition: "@securityService.getUser() == 'ADMIN'"
+        cache-key: "@securityService.getUser()?: getRemoteAddr()"
+        bandwidths: 
+        - capacity: 10000
+          time: 1000
+          unit: minutes
